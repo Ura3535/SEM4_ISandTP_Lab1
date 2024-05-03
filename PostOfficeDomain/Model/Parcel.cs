@@ -5,6 +5,8 @@ namespace PostOfficeDomain.Model;
 
 public partial class Parcel : Entity
 {
+    public string Info { get; set; } = null!;
+
     public double Weight { get; set; }
 
     public int SenderId { get; set; }

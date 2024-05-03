@@ -63,6 +63,7 @@ public partial class DbpostOfficeContext : DbContext
         {
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.DeliveryAddress).HasMaxLength(50);
+            entity.Property(e => e.Info).HasMaxLength(50);
 
             entity.HasOne(d => d.CurrentLocation).WithMany(p => p.ParcelCurrentLocations)
                 .HasForeignKey(d => d.CurrentLocationId)
