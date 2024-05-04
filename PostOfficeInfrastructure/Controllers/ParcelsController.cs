@@ -13,10 +13,12 @@ namespace PostOfficeInfrastructure.Controllers
     public class ParcelsController : Controller
     {
         private readonly DbpostOfficeContext _context;
+        private readonly Client Yurii;  //Знаю що це не гарний hardcode, але поки нема авторизації, то піде
 
         public ParcelsController(DbpostOfficeContext context)
         {
             _context = context;
+            Yurii = _context.Clients.Where(x => x.Name == "Ковальчук Юрій").First();
         }
 
         // GET: Parcels
@@ -41,6 +43,7 @@ namespace PostOfficeInfrastructure.Controllers
             }
 
             var parcel = await _context.Parcels
+                .Where(x => x.ReciverId == Yurii.Id || x.SenderId == Yurii.Id)
                 .Include(p => p.CurrentLocation)
                 .Include(p => p.DeliveryPoints)
                 .Include(p => p.DeparturePoints)
@@ -61,8 +64,7 @@ namespace PostOfficeInfrastructure.Controllers
         {
             ViewData["DeliveryPointsId"] = new SelectList(_context.PostalFacilitys, "Id", "Address");
             ViewData["DeparturePointsId"] = new SelectList(_context.PostalFacilitys, "Id", "Address");
-            ViewData["ReciverId"] = new SelectList(_context.Clients, "Id", "ContactNumber");
-            ViewData["SenderId"] = new SelectList(_context.Clients, "Id", "ContactNumber");
+            ViewData["ReciverId"] = new SelectList(_context.Clients.Where(x => x.Id != Yurii.Id).ToList(), "Id", "ContactNumber");
             return View();
         }
 
@@ -77,7 +79,7 @@ namespace PostOfficeInfrastructure.Controllers
             ProcessTheParcel(parcel);
             //TryValidateModel(parcel);
 
-            //if (ModelState.IsValid)   //Незнаю чого не робить, вже все перепробував(  Вже немає сил терпіти ці пекельні борошна
+            //if (ModelState.IsValid)   //Незнаю чого не робить, все перепробував(  Вже немає сил терпіти ці пекельні борошна
             if (IsValid(parcel))
             {
                 _context.Add(parcel);
@@ -86,13 +88,13 @@ namespace PostOfficeInfrastructure.Controllers
             }
             ViewData["DeliveryPointsId"] = new SelectList(_context.PostalFacilitys.Where(x => x.WeightRestrictions >= parcel.Weight).ToList(), "Id", "Address", parcel.DeliveryPointsId);
             ViewData["DeparturePointsId"] = new SelectList(_context.PostalFacilitys.Where(x => x.WeightRestrictions >= parcel.Weight).ToList(), "Id", "Address", parcel.DeparturePointsId);
-            ViewData["ReciverId"] = new SelectList(_context.Clients, "Id", "ContactNumber", parcel.ReciverId);
-            ViewData["SenderId"] = new SelectList(_context.Clients, "Id", "ContactNumber", parcel.SenderId);
+            ViewData["ReciverId"] = new SelectList(_context.Clients.Where(x => x.Id != Yurii.Id).ToList(), "Id", "ContactNumber", parcel.ReciverId);
             return View(parcel);
         }
 
         private void ProcessTheParcel(Parcel parcel)
         {
+            parcel.SenderId = Yurii.Id;
             parcel.StatusId = _context.ParcelStatuses.Where(x => x.Status == "Очікується відправника").First().Id;
             parcel.Price = CalculatePrice(parcel);
             parcel.CurrentLocationId = parcel.DeliveryPointsId;
