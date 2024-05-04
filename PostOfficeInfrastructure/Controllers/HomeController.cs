@@ -18,6 +18,11 @@ namespace PostOfficeInfrastructure.Controllers
             return View();
         }
 
+        public IActionResult AboutPostOffice()
+        {
+            return View();
+        }
+
         public IActionResult Privacy()
         {
             return View();
