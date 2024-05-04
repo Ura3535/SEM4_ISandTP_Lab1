@@ -22,7 +22,9 @@ namespace PostOfficeInfrastructure.Controllers
         // GET: PostalFacilities
         public async Task<IActionResult> Index()
         {
-            var dbpostOfficeContext = _context.PostalFacilitys.Include(p => p.FacilityType);
+            var dbpostOfficeContext = _context.PostalFacilitys
+                .Where(x => x.FacilityType.Type == "Поштомат" || x.FacilityType.Type == "Приймальне відділення")
+                .Include(p => p.FacilityType);
             return View(await dbpostOfficeContext.ToListAsync());
         }
 
@@ -35,6 +37,7 @@ namespace PostOfficeInfrastructure.Controllers
             }
 
             var postalFacility = await _context.PostalFacilitys
+                .Where(x => x.FacilityType.Type == "Поштомат" || x.FacilityType.Type == "Приймальне відділення")
                 .Include(p => p.FacilityType)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (postalFacility == null)

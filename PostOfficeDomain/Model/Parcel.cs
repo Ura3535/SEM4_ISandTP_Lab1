@@ -47,8 +47,10 @@ public partial class Parcel : Entity
     [Display(Name = "Відділення відправки")]
     public virtual PostalFacility DeparturePoints { get; set; } = null!;
 
+    [Display(Name = "Отримувач")]
     public virtual Client Reciver { get; set; } = null!;
 
+    [Display(Name = "Відправник")]
     public virtual Client Sender { get; set; } = null!;
 
     [Display(Name = "Статус")]

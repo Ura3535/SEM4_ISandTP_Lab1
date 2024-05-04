@@ -4,10 +4,9 @@
     ViewData["Title"] = "Details";
 }
 
-<h1>Детально про посилку @Html.DisplayNameFor(model => model.Info)</h1>
+<h1>Детально про посилку @Html.DisplayFor(model => model.Info)</h1>
 
 <div>
-    <h4>Parcel</h4>
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
@@ -20,19 +19,20 @@
             @Html.DisplayNameFor(model => model.Weight)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Weight)
+            @Html.DisplayFor(model => model.Weight) кг
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Price)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Price)
+            @Html.DisplayFor(model => model.Price) грн
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.DeliveryAddress)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DeliveryAddress)
+            @(Model.DeliveryAddress != null ? Html.DisplayNameFor(model => model.DeliveryAddress) : "Самовивіз із відділення")
+
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.CurrentLocation)
@@ -56,13 +56,13 @@
             @Html.DisplayNameFor(model => model.Reciver)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Reciver.ContactNumber)
+            @Html.DisplayFor(model => model.Reciver.Name) (тел. @Html.DisplayFor(model => model.Reciver.ContactNumber))
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Sender)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Sender.ContactNumber)
+            @Html.DisplayFor(model => model.Sender.Name) (тел. @Html.DisplayFor(model => model.Sender.ContactNumber))
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Status)
@@ -71,7 +71,4 @@
             @Html.DisplayFor(model => model.Status.Status)
         </dd>
     </dl>
-</div>
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>

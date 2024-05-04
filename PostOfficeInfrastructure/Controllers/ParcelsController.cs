@@ -59,12 +59,10 @@ namespace PostOfficeInfrastructure.Controllers
         // GET: Parcels/Create
         public IActionResult Create()
         {
-            ViewData["CurrentLocationId"] = new SelectList(_context.PostalFacilitys, "Id", "Address");
             ViewData["DeliveryPointsId"] = new SelectList(_context.PostalFacilitys, "Id", "Address");
             ViewData["DeparturePointsId"] = new SelectList(_context.PostalFacilitys, "Id", "Address");
             ViewData["ReciverId"] = new SelectList(_context.Clients, "Id", "ContactNumber");
             ViewData["SenderId"] = new SelectList(_context.Clients, "Id", "ContactNumber");
-            ViewData["StatusId"] = new SelectList(_context.ParcelStatuses, "Id", "Status");
             return View();
         }
 
@@ -75,32 +73,43 @@ namespace PostOfficeInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Info,Weight,SenderId,ReciverId,DeparturePointsId,DeliveryPointsId,Price,StatusId,CurrentLocationId,DeliveryAddress,Id")] Parcel parcel)
         {
-            //ProcessTheParcel(parcel);
+            //ModelState.Clear();
+            ProcessTheParcel(parcel);
+            //TryValidateModel(parcel);
 
-            if (ModelState.IsValid)
+            //if (ModelState.IsValid)   //Незнаю чого не робить, вже все перепробував(  Вже немає сил терпіти ці пекельні борошна
+            if (IsValid(parcel))
             {
                 _context.Add(parcel);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CurrentLocationId"] = new SelectList(_context.PostalFacilitys, "Id", "Address", parcel.CurrentLocationId);
             ViewData["DeliveryPointsId"] = new SelectList(_context.PostalFacilitys.Where(x => x.WeightRestrictions >= parcel.Weight).ToList(), "Id", "Address", parcel.DeliveryPointsId);
             ViewData["DeparturePointsId"] = new SelectList(_context.PostalFacilitys.Where(x => x.WeightRestrictions >= parcel.Weight).ToList(), "Id", "Address", parcel.DeparturePointsId);
             ViewData["ReciverId"] = new SelectList(_context.Clients, "Id", "ContactNumber", parcel.ReciverId);
             ViewData["SenderId"] = new SelectList(_context.Clients, "Id", "ContactNumber", parcel.SenderId);
-            ViewData["StatusId"] = new SelectList(_context.ParcelStatuses, "Id", "Status", parcel.StatusId);
             return View(parcel);
         }
 
         private void ProcessTheParcel(Parcel parcel)
         {
-            parcel.StatusId = 1;
-            parcel.Price = (int)(parcel.Weight * 10);
+            parcel.StatusId = _context.ParcelStatuses.Where(x => x.Status == "Очікується відправника").First().Id;
+            parcel.Price = CalculatePrice(parcel);
             parcel.CurrentLocationId = parcel.DeliveryPointsId;
+        }
+        private int CalculatePrice(Parcel parcel)
+        {
+            const int standartPrice = 30;
+            const int courierDeliveryPrice = 50;
+            return (parcel.DeliveryAddress == null ? courierDeliveryPrice : 0) + standartPrice + (int)(parcel.Weight * 10);
         }
         private bool IsValid(Parcel parsel)
         {
-            return _context.PostalFacilitys
+            return parsel.DeparturePointsId != parsel.DeliveryPointsId
+                && parsel.SenderId != parsel.ReciverId
+                && parsel.Info.Length < 50
+                && parsel.Weight > 0
+                && _context.PostalFacilitys
                 .Where(x => x.Id == parsel.DeliveryPointsId || x.Id == parsel.DeparturePointsId)
                 .All(x => x.WeightRestrictions >= parsel.Weight);
         }
