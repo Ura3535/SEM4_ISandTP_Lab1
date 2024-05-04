@@ -22,7 +22,13 @@ namespace PostOfficeInfrastructure.Controllers
         // GET: Parcels
         public async Task<IActionResult> Index()
         {
-            var dbpostOfficeContext = _context.Parcels.Include(p => p.CurrentLocation).Include(p => p.DeliveryPoints).Include(p => p.DeparturePoints).Include(p => p.Reciver).Include(p => p.Sender).Include(p => p.Status);
+            var dbpostOfficeContext = _context.Parcels
+                .Include(p => p.CurrentLocation)
+                .Include(p => p.DeliveryPoints)
+                .Include(p => p.DeparturePoints)
+                .Include(p => p.Reciver)
+                .Include(p => p.Sender)
+                .Include(p => p.Status);
             return View(await dbpostOfficeContext.ToListAsync());
         }
 
@@ -69,6 +75,8 @@ namespace PostOfficeInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Info,Weight,SenderId,ReciverId,DeparturePointsId,DeliveryPointsId,Price,StatusId,CurrentLocationId,DeliveryAddress,Id")] Parcel parcel)
         {
+            //ProcessTheParcel(parcel);
+
             if (ModelState.IsValid)
             {
                 _context.Add(parcel);
@@ -76,15 +84,26 @@ namespace PostOfficeInfrastructure.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["CurrentLocationId"] = new SelectList(_context.PostalFacilitys, "Id", "Address", parcel.CurrentLocationId);
-            ViewData["DeliveryPointsId"] = new SelectList(_context.PostalFacilitys, "Id", "Address", parcel.DeliveryPointsId);
-            ViewData["DeparturePointsId"] = new SelectList(_context.PostalFacilitys, "Id", "Address", parcel.DeparturePointsId);
+            ViewData["DeliveryPointsId"] = new SelectList(_context.PostalFacilitys.Where(x => x.WeightRestrictions >= parcel.Weight).ToList(), "Id", "Address", parcel.DeliveryPointsId);
+            ViewData["DeparturePointsId"] = new SelectList(_context.PostalFacilitys.Where(x => x.WeightRestrictions >= parcel.Weight).ToList(), "Id", "Address", parcel.DeparturePointsId);
             ViewData["ReciverId"] = new SelectList(_context.Clients, "Id", "ContactNumber", parcel.ReciverId);
             ViewData["SenderId"] = new SelectList(_context.Clients, "Id", "ContactNumber", parcel.SenderId);
             ViewData["StatusId"] = new SelectList(_context.ParcelStatuses, "Id", "Status", parcel.StatusId);
             return View(parcel);
         }
 
-
+        private void ProcessTheParcel(Parcel parcel)
+        {
+            parcel.StatusId = 1;
+            parcel.Price = (int)(parcel.Weight * 10);
+            parcel.CurrentLocationId = parcel.DeliveryPointsId;
+        }
+        private bool IsValid(Parcel parsel)
+        {
+            return _context.PostalFacilitys
+                .Where(x => x.Id == parsel.DeliveryPointsId || x.Id == parsel.DeparturePointsId)
+                .All(x => x.WeightRestrictions >= parsel.Weight);
+        }
         private bool ParcelExists(int id)
         {
             return _context.Parcels.Any(e => e.Id == id);

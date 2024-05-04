@@ -4,7 +4,7 @@
     ViewData["Title"] = "Details";
 }
 
-<h1>Детально про посилку</h1>
+<h1>Детально про посилку @Html.DisplayNameFor(model => model.Info)</h1>
 
 <div>
     <h4>Parcel</h4>
@@ -73,6 +73,5 @@
     </dl>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
     <a asp-action="Index">Back to List</a>
 </div>

@@ -5,6 +5,7 @@ using PostOfficeDomain.Model;
 
 namespace PostOfficeInfrastructure;
 
+
 public partial class DbpostOfficeContext : DbContext
 {
     public DbpostOfficeContext()
@@ -36,7 +37,6 @@ public partial class DbpostOfficeContext : DbContext
     {
         modelBuilder.Entity<Client>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.ContactNumber).HasMaxLength(50);
             entity.Property(e => e.Email).HasMaxLength(50);
             entity.Property(e => e.Name).HasMaxLength(50);
@@ -44,7 +44,6 @@ public partial class DbpostOfficeContext : DbContext
 
         modelBuilder.Entity<Courier>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.City).HasMaxLength(50);
             entity.Property(e => e.Name).HasMaxLength(50);
 
@@ -55,13 +54,11 @@ public partial class DbpostOfficeContext : DbContext
 
         modelBuilder.Entity<FacilityType>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Type).HasMaxLength(50);
         });
 
         modelBuilder.Entity<Parcel>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.DeliveryAddress).HasMaxLength(50);
             entity.Property(e => e.Info).HasMaxLength(50);
 
@@ -98,13 +95,11 @@ public partial class DbpostOfficeContext : DbContext
 
         modelBuilder.Entity<ParcelStatus>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Status).HasMaxLength(50);
         });
 
         modelBuilder.Entity<PostalFacility>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Address).HasMaxLength(50);
             entity.Property(e => e.Name)
                 .HasMaxLength(50)

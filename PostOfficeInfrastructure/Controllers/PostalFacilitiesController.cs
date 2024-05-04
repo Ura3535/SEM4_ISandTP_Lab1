@@ -44,10 +44,5 @@ namespace PostOfficeInfrastructure.Controllers
 
             return View(postalFacility);
         }
-
-        private bool PostalFacilityExists(int id)
-        {
-            return _context.PostalFacilitys.Any(e => e.Id == id);
-        }
     }
 }

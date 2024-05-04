@@ -4,7 +4,7 @@
     ViewData["Title"] = "Details";
 }
 
-<h1>Детально</h1>
+<h1>Детально про @Html.DisplayFor(model => model.Name)</h1>
 
 <div>
     <h4>PostalFacility</h4>
@@ -34,8 +34,11 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.WeightRestrictions)
         </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.FacilityType)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.FacilityType.Type)
+        </dd>
     </dl>
-</div>
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
