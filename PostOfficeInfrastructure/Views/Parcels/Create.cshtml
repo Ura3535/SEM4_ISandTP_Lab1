@@ -1,0 +1,42 @@
+﻿@model PostOfficeDomain.Model.Parcel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Створити посилку</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Info" class="control-label"></label>
+                <input asp-for="Info" class="form-control" />
+                <span asp-validation-for="Info" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Weight" class="control-label"></label>
+                <input asp-for="Weight" class="form-control" />
+                <span asp-validation-for="Weight" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ReciverId" class="control-label"></label>
+                <select asp-for="ReciverId" class ="form-control" asp-items="ViewBag.ReciverId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="DeparturePointsId" class="control-label"></label>
+                <select asp-for="DeparturePointsId" class ="form-control" asp-items="ViewBag.DeparturePointsId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="DeliveryPointsId" class="control-label"></label>
+                <select asp-for="DeliveryPointsId" class ="form-control" asp-items="ViewBag.DeliveryPointsId"></select>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Створити посилку" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
