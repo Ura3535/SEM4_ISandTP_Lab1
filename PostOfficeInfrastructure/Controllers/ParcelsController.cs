@@ -25,6 +25,7 @@ namespace PostOfficeInfrastructure.Controllers
         public async Task<IActionResult> Index()
         {
             var dbpostOfficeContext = _context.Parcels
+                .Where(x => x.ReciverId == Yurii.Id || x.SenderId == Yurii.Id)
                 .Include(p => p.CurrentLocation)
                 .Include(p => p.DeliveryPoints)
                 .Include(p => p.DeparturePoints)
