@@ -97,7 +97,7 @@ namespace PostOfficeInfrastructure.Controllers
             parcel.SenderId = Yurii.Id;
             parcel.StatusId = _context.ParcelStatuses.Where(x => x.Status == "Очікується відправника").First().Id;
             parcel.Price = CalculatePrice(parcel);
-            parcel.CurrentLocationId = parcel.DeliveryPointsId;
+            parcel.CurrentLocationId = parcel.DeparturePointsId;
         }
         private int CalculatePrice(Parcel parcel)
         {
