@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PostOfficeDomain.Model;
 using PostOfficeInfrastructure;
+using PostOfficeInfrastructure.Services;
 
 namespace PostOfficeInfrastructure.Controllers
 {
@@ -25,6 +26,7 @@ namespace PostOfficeInfrastructure.Controllers
         public async Task<IActionResult> Index()
         {
             var dbpostOfficeContext = _context.Parcels
+                .Where(x => x.ReciverId == Yurii.Id || x.SenderId == Yurii.Id)
                 .Include(p => p.CurrentLocation)
                 .Include(p => p.DeliveryPoints)
                 .Include(p => p.DeparturePoints)
@@ -97,7 +99,7 @@ namespace PostOfficeInfrastructure.Controllers
             parcel.SenderId = Yurii.Id;
             parcel.StatusId = _context.ParcelStatuses.Where(x => x.Status == "Очікується відправника").First().Id;
             parcel.Price = CalculatePrice(parcel);
-            parcel.CurrentLocationId = parcel.DeliveryPointsId;
+            parcel.CurrentLocationId = parcel.DeparturePointsId;
         }
         private int CalculatePrice(Parcel parcel)
         {
@@ -118,6 +120,43 @@ namespace PostOfficeInfrastructure.Controllers
         private bool ParcelExists(int id)
         {
             return _context.Parcels.Any(e => e.Id == id);
+        }
+
+        [HttpGet]
+        public IActionResult Import()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Import(IFormFile fileExcel, CancellationToken cancellationToken)
+        {
+            var factory = new AutorDataPortServiceFactory(_context);
+            var importService = factory.GetImportService(fileExcel.ContentType);
+
+            using var stream = fileExcel.OpenReadStream();
+            await importService.ImportFromStreamAsync(stream, cancellationToken);
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Export([FromQuery] string contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    CancellationToken cancellationToken = default)
+        {
+            var factory = new AutorDataPortServiceFactory(_context);
+            var exportService = factory.GetExportService(contentType);
+
+            var memoryStream = new MemoryStream();
+
+            await exportService.WriteToAsync(memoryStream, cancellationToken);
+
+            await memoryStream.FlushAsync(cancellationToken);
+            memoryStream.Position = 0;
+
+            return new FileStreamResult(memoryStream, contentType)
+            {
+                FileDownloadName = $"parcel_{DateTime.UtcNow.ToShortDateString()}.xlsx"
+            };
         }
     }
 }

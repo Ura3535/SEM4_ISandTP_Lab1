@@ -41,3 +41,30 @@
         </dd>
     </dl>
 </div>
+
+<div class="container">
+    <div id="chart2"></div>
+</div>
+@section scripts {
+    <script type "text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', { 'packages': ['corechart'] });
+        google.charts.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+            var id = '@Html.Raw(Model.Id)';
+            var url = '/api/Chart/JsonData/' + id;
+
+            $.get(url, function (JsonData) {
+                data = google.visualization.arrayToDataTable(JsonData, false);
+                var option = {
+                    title: "Співвідношення кількості посилок відправленими поштоматами до відправленими поштовим відділенням",
+                    width: 500,
+                    height: 400
+                };
+                chart = new google.visualization.PieChart(document.getElementById('chart2'));
+                chart.draw(data, option);
+            })
+        }
+    </script>
+}
