@@ -43,23 +43,23 @@ namespace PostOfficeInfrastructure.Services
             var columnIndex = 1;
             worksheet.Cell(rowIndex, columnIndex++).Value = parcel.Info;
             worksheet.Cell(rowIndex, columnIndex++).Value = parcel.Weight.ToString();
-            worksheet.Cell(rowIndex, columnIndex++).Value = parcel.SenderId.ToString();
-            worksheet.Cell(rowIndex, columnIndex++).Value = parcel.ReciverId.ToString();
-            worksheet.Cell(rowIndex, columnIndex++).Value = parcel.DeparturePointsId.ToString();
-            worksheet.Cell(rowIndex, columnIndex++).Value = parcel.DeliveryPointsId.ToString();
+            worksheet.Cell(rowIndex, columnIndex++).Value = $"{parcel.Sender.Name} (тел. {parcel.Sender.ContactNumber})";
+            worksheet.Cell(rowIndex, columnIndex++).Value = $"{parcel.Reciver.Name} (тел. {parcel.Reciver.ContactNumber})";
+            worksheet.Cell(rowIndex, columnIndex++).Value = $"{parcel.DeparturePoints.Name}; адреса: {parcel.DeparturePoints.Address}";
+            worksheet.Cell(rowIndex, columnIndex++).Value = $"{parcel.DeliveryPoints.Name}; адреса: {parcel.DeliveryPoints.Address}";
             worksheet.Cell(rowIndex, columnIndex++).Value = parcel.Price.ToString();
-            worksheet.Cell(rowIndex, columnIndex++).Value = parcel.StatusId.ToString();
-            worksheet.Cell(rowIndex, columnIndex++).Value = parcel.CurrentLocationId.ToString();
+            worksheet.Cell(rowIndex, columnIndex++).Value = parcel.Status.Status;
+            worksheet.Cell(rowIndex, columnIndex++).Value = $"{parcel.CurrentLocation.Name}; адреса: {parcel.CurrentLocation.Address}";
             worksheet.Cell(rowIndex, columnIndex++).Value = parcel.DeliveryAddress;
         }
 
-        private void WriteAutors(IXLWorksheet worksheet, ICollection<Parcel> autors)
+        private void WriteAutors(IXLWorksheet worksheet, ICollection<Parcel> parcels)
         {
             WriteHeader(worksheet);
             int rowIndex = 2;
-            foreach (var autor in autors)
+            foreach (var parcel in parcels)
             {
-                WriteAutor(worksheet, autor, rowIndex);
+                WriteAutor(worksheet, parcel, rowIndex);
                 rowIndex++;
             }
         }
@@ -71,10 +71,18 @@ namespace PostOfficeInfrastructure.Services
                 throw new ArgumentException("Input stream is not writable");
             }
 
-            var autors = await _context.Parcels.ToListAsync(cancellationToken);
+            var parcels = await _context.Parcels
+                .Include(p => p.CurrentLocation)
+                .Include(p => p.DeliveryPoints)
+                .Include(p => p.DeparturePoints)
+                .Include(p => p.Reciver)
+                .Include(p => p.Sender)
+                .Include(p => p.Status)
+                .ToListAsync(cancellationToken);
+
             var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("Parcels");
-            WriteAutors(worksheet, autors);
+            WriteAutors(worksheet, parcels);
             workbook.SaveAs(stream);
         }
     }
