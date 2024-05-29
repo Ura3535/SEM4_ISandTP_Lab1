@@ -178,7 +178,7 @@ namespace PostOfficeInfrastructure.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(ParcelList));
             }
 
             ViewData["DeliveryPointsId"] = new SelectList(_context.PostalFacilitys, "Id", "Address", parcel.DeliveryPointsId);
