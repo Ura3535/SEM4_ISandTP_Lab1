@@ -1,18 +1,21 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using DocumentFormat.OpenXml.Office2010.Excel;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using PostOfficeDomain.Model;
+using PostOfficeInfrastructure;
 using PostOfficeInfrastructure.ViewModel;
 
 namespace LibraryWebApplication.Controllers
 {
     public class AccountController : Controller
     {
-
+        private readonly DbpostOfficeContext _context;
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager)
+        public AccountController(DbpostOfficeContext context, UserManager<User> userManager, SignInManager<User> signInManager)
         {
+            _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
         }
@@ -31,8 +34,19 @@ namespace LibraryWebApplication.Controllers
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
+                    if (!_context.Clients.Any(x => x.ContactNumber == model.ContactNumber))
+                    {
+                        var newClient = new Client
+                        {
+                            Name = model.Name,
+                            ContactNumber = model.ContactNumber
+                        };
+                        _context.Clients.Add(newClient);
+                    }
+
                     // установка кукі
                     await _signInManager.SignInAsync(user, false);
+                    
                     return RedirectToAction("Index", "Home");
                 }
                 else

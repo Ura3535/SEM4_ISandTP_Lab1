@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -14,38 +15,46 @@ namespace PostOfficeInfrastructure.Controllers
     public class ParcelsController : Controller
     {
         private readonly DbpostOfficeContext _context;
-        private readonly Client Yurii;  //Знаю що це не гарний hardcode, але поки нема авторизації, то піде
+        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
 
-        public ParcelsController(DbpostOfficeContext context)
+        public ParcelsController(DbpostOfficeContext context, UserManager<User> userManager, SignInManager<User> signInManager)
         {
             _context = context;
-            Yurii = _context.Clients.Where(x => x.Name == "Ковальчук Юрій").First();
+            _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         // GET: Parcels
         public async Task<IActionResult> Index()
         {
+            if (!_signInManager.IsSignedIn(User))
+                return RedirectToAction("Register", "Account");
+
+            Client client = await GetClientAsync();
+
             var dbpostOfficeContext = _context.Parcels
-                .Where(x => x.ReciverId == Yurii.Id || x.SenderId == Yurii.Id)
+                .Where(x => x.ReciverId == client.Id || x.SenderId == client.Id)
                 .Include(p => p.CurrentLocation)
                 .Include(p => p.DeliveryPoints)
                 .Include(p => p.DeparturePoints)
                 .Include(p => p.Reciver)
                 .Include(p => p.Sender)
                 .Include(p => p.Status);
+
             return View(await dbpostOfficeContext.ToListAsync());
         }
 
         // GET: Parcels/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (!_signInManager.IsSignedIn(User))
+                return RedirectToAction("Register", "Account");
+
+            Client client = await GetClientAsync();
 
             var parcel = await _context.Parcels
-                .Where(x => x.ReciverId == Yurii.Id || x.SenderId == Yurii.Id)
+                .Where(x => x.ReciverId == client.Id || x.SenderId == client.Id)
                 .Include(p => p.CurrentLocation)
                 .Include(p => p.DeliveryPoints)
                 .Include(p => p.DeparturePoints)
@@ -53,6 +62,7 @@ namespace PostOfficeInfrastructure.Controllers
                 .Include(p => p.Sender)
                 .Include(p => p.Status)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (parcel == null)
             {
                 return NotFound();
@@ -62,11 +72,16 @@ namespace PostOfficeInfrastructure.Controllers
         }
 
         // GET: Parcels/Create
-        public IActionResult Create()
+        public async Task<IActionResult> CreateAsync()
         {
+            if (!_signInManager.IsSignedIn(User))
+                return RedirectToAction("Register", "Account");
+
+            Client client = await GetClientAsync();
+
             ViewData["DeliveryPointsId"] = new SelectList(_context.PostalFacilitys, "Id", "Address");
             ViewData["DeparturePointsId"] = new SelectList(_context.PostalFacilitys, "Id", "Address");
-            ViewData["ReciverId"] = new SelectList(_context.Clients.Where(x => x.Id != Yurii.Id).ToList(), "Id", "ContactNumber");
+            ViewData["ReciverId"] = new SelectList(_context.Clients.Where(x => x.Id != client.Id).ToList(), "Id", "ContactNumber");
             return View();
         }
 
@@ -77,9 +92,12 @@ namespace PostOfficeInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Info,Weight,SenderId,ReciverId,DeparturePointsId,DeliveryPointsId,Price,StatusId,CurrentLocationId,DeliveryAddress,Id")] Parcel parcel)
         {
-            //ModelState.Clear();
-            ProcessTheParcel(parcel);
-            //TryValidateModel(parcel);
+            if (!_signInManager.IsSignedIn(User))
+                return RedirectToAction("Register", "Account");
+
+            Client client = await GetClientAsync();
+
+            ProcessTheParcel(parcel, client);
 
             //if (ModelState.IsValid)   //Незнаю чого не робить, все перепробував(  Вже немає сил терпіти ці пекельні борошна
             if (IsValid(parcel))
@@ -90,13 +108,13 @@ namespace PostOfficeInfrastructure.Controllers
             }
             ViewData["DeliveryPointsId"] = new SelectList(_context.PostalFacilitys.Where(x => x.WeightRestrictions >= parcel.Weight).ToList(), "Id", "Address", parcel.DeliveryPointsId);
             ViewData["DeparturePointsId"] = new SelectList(_context.PostalFacilitys.Where(x => x.WeightRestrictions >= parcel.Weight).ToList(), "Id", "Address", parcel.DeparturePointsId);
-            ViewData["ReciverId"] = new SelectList(_context.Clients.Where(x => x.Id != Yurii.Id).ToList(), "Id", "ContactNumber", parcel.ReciverId);
+            ViewData["ReciverId"] = new SelectList(_context.Clients.Where(x => x.Id != client.Id).ToList(), "Id", "ContactNumber", parcel.ReciverId);
             return View(parcel);
         }
 
-        private void ProcessTheParcel(Parcel parcel)
+        private void ProcessTheParcel(Parcel parcel, Client client)
         {
-            parcel.SenderId = Yurii.Id;
+            parcel.SenderId = client.Id;
             parcel.StatusId = _context.ParcelStatuses.Where(x => x.Status == "Очікується відправника").First().Id;
             parcel.Price = CalculatePrice(parcel);
             parcel.CurrentLocationId = parcel.DeparturePointsId;
@@ -116,6 +134,16 @@ namespace PostOfficeInfrastructure.Controllers
                 && _context.PostalFacilitys
                 .Where(x => x.Id == parsel.DeliveryPointsId || x.Id == parsel.DeparturePointsId)
                 .All(x => x.WeightRestrictions >= parsel.Weight);
+        }
+
+        private async Task<Client> GetClientAsync()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var client = _context.Clients
+                .Where(x => x.ContactNumber == user.ContactNumber)
+                .First();
+
+            return client;
         }
         private bool ParcelExists(int id)
         {
