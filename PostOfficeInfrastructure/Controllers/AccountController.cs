@@ -2,10 +2,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using PostOfficeDomain.Model;
-using PostOfficeInfrastructure;
 using PostOfficeInfrastructure.ViewModel;
 
-namespace LibraryWebApplication.Controllers
+namespace PostOfficeInfrastructure.Controllers
 {
     public class AccountController : Controller
     {
