@@ -1,4 +1,5 @@
 ﻿using DocumentFormat.OpenXml.Office2010.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using PostOfficeDomain.Model;
@@ -29,10 +30,10 @@ namespace PostOfficeInfrastructure.Controllers
             if (ModelState.IsValid)
             {
                 User user = new User { UserName = model.ContactNumber, ContactNumber = model.ContactNumber };
-                // додаємо користувача
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
+                    await _userManager.AddToRoleAsync(user, "user");
                     if (!_context.Clients.Any(x => x.ContactNumber == model.ContactNumber))
                     {
                         var newClient = new Client
@@ -41,6 +42,7 @@ namespace PostOfficeInfrastructure.Controllers
                             ContactNumber = model.ContactNumber
                         };
                         _context.Clients.Add(newClient);
+                        await _context.SaveChangesAsync();
                     }
 
                     // установка кукі

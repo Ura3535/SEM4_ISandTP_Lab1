@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -45,23 +46,32 @@ namespace PostOfficeInfrastructure.Controllers
             return View(await dbpostOfficeContext.ToListAsync());
         }
 
+        [Authorize(Roles = "worker")]
+        public async Task<IActionResult> ParcelList()
+        {
+            var dbpostOfficeContext = _context.Parcels
+                .Include(p => p.CurrentLocation)
+                .Include(p => p.DeliveryPoints)
+                .Include(p => p.DeparturePoints)
+                .Include(p => p.Reciver)
+                .Include(p => p.Sender)
+                .Include(p => p.Status);
+
+            return View(await dbpostOfficeContext.ToListAsync());
+        }
+
         // GET: Parcels/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (!_signInManager.IsSignedIn(User))
-                return RedirectToAction("Register", "Account");
-
-            Client client = await GetClientAsync();
-
             var parcel = await _context.Parcels
-                .Where(x => x.ReciverId == client.Id || x.SenderId == client.Id)
+                .Where(x => x.Id == id)
                 .Include(p => p.CurrentLocation)
                 .Include(p => p.DeliveryPoints)
                 .Include(p => p.DeparturePoints)
                 .Include(p => p.Reciver)
                 .Include(p => p.Sender)
                 .Include(p => p.Status)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync();
 
             if (parcel == null)
             {
@@ -111,6 +121,114 @@ namespace PostOfficeInfrastructure.Controllers
             ViewData["ReciverId"] = new SelectList(_context.Clients.Where(x => x.Id != client.Id).ToList(), "Id", "ContactNumber", parcel.ReciverId);
             return View(parcel);
         }
+
+        // GET: Parcels/Edit/5
+        [Authorize(Roles = "worker")]
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var parcel = await _context.Parcels
+                .Where(x => x.Id == id)
+                .FirstOrDefaultAsync();
+
+            if (parcel == null)
+            {
+                return NotFound();
+            }
+
+            ViewData["DeliveryPointsId"] = new SelectList(_context.PostalFacilitys, "Id", "Address", parcel.DeliveryPointsId);
+            ViewData["DeparturePointsId"] = new SelectList(_context.PostalFacilitys, "Id", "Address", parcel.DeparturePointsId);
+            ViewData["CurrentLocationId"] = new SelectList(_context.PostalFacilitys, "Id", "Address", parcel.CurrentLocationId);
+            ViewData["ReciverId"] = new SelectList(_context.Clients, "Id", "ContactNumber", parcel.ReciverId);
+            ViewData["SenderId"] = new SelectList(_context.Clients, "Id", "ContactNumber", parcel.SenderId);
+            ViewData["StatusId"] = new SelectList(_context.ParcelStatuses, "Id", "Status", parcel.StatusId);
+            return View(parcel);
+        }
+
+        // POST: Parcels/Edit/5
+        [HttpPost]
+        [Authorize(Roles = "worker")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Info,Weight,SenderId,ReciverId,DeparturePointsId,DeliveryPointsId,Price,StatusId,CurrentLocationId,DeliveryAddress")] Parcel parcel)
+        {
+            if (id != parcel.Id)
+            {
+                return NotFound();
+            }
+
+            if (IsValid(parcel))
+            {
+                try
+                {
+                    _context.Update(parcel);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!ParcelExists(parcel.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+
+            ViewData["DeliveryPointsId"] = new SelectList(_context.PostalFacilitys, "Id", "Address", parcel.DeliveryPointsId);
+            ViewData["DeparturePointsId"] = new SelectList(_context.PostalFacilitys, "Id", "Address", parcel.DeparturePointsId);
+            ViewData["ReciverId"] = new SelectList(_context.Clients, "Id", "ContactNumber", parcel.ReciverId);
+            return View(parcel);
+        }
+
+        // GET: Parcels/Delete/5
+        [Authorize(Roles = "worker")]
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var parcel = await _context.Parcels
+                .Where(x => x.Id == id)
+                .Include(p => p.CurrentLocation)
+                .Include(p => p.DeliveryPoints)
+                .Include(p => p.DeparturePoints)
+                .Include(p => p.Reciver)
+                .Include(p => p.Sender)
+                .Include(p => p.Status)
+                .FirstOrDefaultAsync();
+
+            if (parcel == null)
+            {
+                return NotFound();
+            }
+
+            return View(parcel);
+        }
+
+        // POST: Parcels/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "worker")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            if (!_signInManager.IsSignedIn(User))
+                return RedirectToAction("Register", "Account");
+
+            var parcel = await _context.Parcels.FindAsync(id);
+            _context.Parcels.Remove(parcel);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
 
         private void ProcessTheParcel(Parcel parcel, Client client)
         {

@@ -26,29 +26,40 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="AboutPostOffice">Про сайт</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Parcels" asp-action="Create">Створити посилку</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Parcels" asp-action="Index">Мої посилки</a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="PostalFacilities" asp-action="Index">Відділення та поштомати</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-
                         @if(!User.Identity.IsAuthenticated)
                         {
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Register">Реєстрація</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Увійти</a>
-                        </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Register">Реєстрація</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Увійти</a>
+                            </li>
                         }
                         else {
-                        <li class="nav-item">
+                            if(User.IsInRole("admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Roles" asp-action="Index">Ролі</a>
+                                </li>
+                            }
+                            if (User.IsInRole("worker"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Parcels" asp-action="ParcelList">Посилки</a>
+                                </li>
+                            }
+                            if (User.IsInRole("user"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Parcels" asp-action="Create">Створити посилку</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Parcels" asp-action="Index">Мої посилки</a>
+                                </li>
+                            }
+                            <li class="nav-item">
                             <form id="logoutForm" method="post" asp-controller="Account" asp-action="Logout" style="display:inline;">
                                 <a href="javascript:void(0);" onclick="document.getElementById('logoutForm').submit();" class="nav-link text-dark">Вийти</a>
                             </form>
