@@ -1,14 +1,26 @@
 using PostOfficeInfrastructure;
 using Microsoft.EntityFrameworkCore;
+using LibraryWebApplication;
+using Microsoft.AspNetCore.Identity;
+using PostOfficeDomain.Model;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+//builder.Services.AddControllersWithViews();
 
 builder.Services.AddDbContext<DbpostOfficeContext>(option => option.UseSqlServer(
     builder.Configuration.GetConnectionString("DefaultConnection")
     ));
+//builder.Services.AddControllersWithViews();
+
+builder.Services.AddDbContext<IdentityContext>(option => option.UseSqlServer(
+    builder.Configuration.GetConnectionString("IdentityConnection")
+    ));
+builder.Services.AddControllersWithViews();
+
+builder.Services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<IdentityContext>();
 
 
 var app = builder.Build();
@@ -23,7 +35,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
+app.UseAuthentication();
 app.UseRouting();
 
 app.UseAuthorization();
