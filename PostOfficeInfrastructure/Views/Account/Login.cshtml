@@ -1,0 +1,24 @@
+﻿@model PostOfficeInfrastructure.ViewModel.LoginViewModel
+
+<h2>Login</h2>
+<form method="post" asp-controller="Account" asp-action="Login"
+      asp-route-returnUrl="@Model.ReturnUrl">
+    <div asp-validation-summary="ModelOnly"></div>
+    <div>
+        <label asp-for="ContactNumber"></label><br />
+        <input asp-for="ContactNumber" />
+        <span asp-validation-for="ContactNumber"></span>
+    </div>
+    <div>
+        <label asp-for="Password"></label><br />
+        <input asp-for="Password" />
+        <span asp-validation-for="Password"></span>
+    </div>
+    <div>
+        <label asp-for="RememberMe"></label><br />
+        <input asp-for="RememberMe" />
+    </div>
+    <div>
+        <input type="submit" value="Увійти" />
+    </div>
+</form>

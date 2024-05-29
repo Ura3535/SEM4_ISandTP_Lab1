@@ -1,5 +1,35 @@
-﻿<div class="text-center">
-    <h1 class="display-4">Привіт!</h1>
-    <p> Хочеш переглянути свої <a asp-action="Index" asp-controller="Parcels">посилки</a>
-        , чи може створиш <a asp-action="Create" asp-controller="Parcels">нову</a>?</p>
+﻿
+<div class="text-center">
+    <h1 class="display-4">Привіт! Вітаємо в PostOffice</h1>
+    <font size="5">
+        @if (!User.Identity.IsAuthenticated)
+        {
+            <p>
+                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Register">Зареєструйтесь</a> або <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Увійдіть</a>
+            </p>
+        }
+        else
+        {
+            if (User.IsInRole("admin"))
+            {
+                <p>
+                    <a asp-action="Index" asp-controller="Roles">Переглянути ролі</a>
+                </p>
+            }
+
+            if (User.IsInRole("worker"))
+            {
+                <p>
+                    <a asp-action="ParcelList" asp-controller="Parcels">Список усіх посилок</a>
+                </p>
+            }
+
+            if (User.IsInRole("user"))
+            {
+                <p>
+                    Хочеш переглянути свої <a asp-action="Index" asp-controller="Parcels">посилки</a>, чи може створиш <a asp-action="Create" asp-controller="Parcels">нову</a>?
+                </p>
+            }
+        }
+    </font>
 </div>

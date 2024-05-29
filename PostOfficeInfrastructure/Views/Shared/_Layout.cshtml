@@ -12,7 +12,7 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">PostOfficeInfrastructure</a>
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">PostOffice</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -26,17 +26,45 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="AboutPostOffice">Про сайт</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Parcels" asp-action="Create">Створити посилку</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Parcels" asp-action="Index">Мої посилки</a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="PostalFacilities" asp-action="Index">Відділення та поштомати</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                        @if(!User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Register">Реєстрація</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Увійти</a>
+                            </li>
+                        }
+                        else {
+                            if(User.IsInRole("admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Roles" asp-action="Index">Ролі</a>
+                                </li>
+                            }
+                            if (User.IsInRole("worker"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Parcels" asp-action="ParcelList">Посилки</a>
+                                </li>
+                            }
+                            if (User.IsInRole("user"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Parcels" asp-action="Create">Створити посилку</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Parcels" asp-action="Index">Мої посилки</a>
+                                </li>
+                            }
+                            <li class="nav-item">
+                            <form id="logoutForm" method="post" asp-controller="Account" asp-action="Logout" style="display:inline;">
+                                <a href="javascript:void(0);" onclick="document.getElementById('logoutForm').submit();" class="nav-link text-dark">Вийти</a>
+                            </form>
                         </li>
+                        }
                     </ul>
                 </div>
             </div>

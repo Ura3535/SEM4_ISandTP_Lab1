@@ -1,0 +1,31 @@
+﻿@model PostOfficeInfrastructure.ViewModel.RegisterViewModel
+<h2>Реєстрація нового користувача</h2>
+
+<form method="post" asp-controller="Account" asp-action="Register">
+    <div asp-validation-summary="ModelOnly"></div>
+    <div>
+        <label asp-for="Name"></label><br />
+        <input asp-for="Name" />
+        <span asp-validation-for="Name"></span>
+    </div>
+    <div>
+        <label asp-for="ContactNumber"></label><br />
+        <input asp-for="ContactNumber" />
+        <span asp-validation-for="ContactNumber"></span>
+    </div>
+    <div>
+        <label asp-for="Password"></label><br />
+        <input asp-for="Password" />
+        <span asp-validation-for="Password"></span>
+    </div>
+    <div>
+        <label asp-for="PasswordConfirm"></label><br />
+        <input asp-for="PasswordConfirm" />
+        <span asp-validation-for="PasswordConfirm"></span>
+    </div>
+    <div>
+        <input type="submit" value="Реєстрація" />
+    </div>
+</form>
+
+<p1>Уже маєте аккаунт? <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Увійдіть!</a></p1>
