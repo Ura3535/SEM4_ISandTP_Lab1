@@ -5,10 +5,16 @@
 }
 
 <h1>Список усіх посилок</h1>
-
+<p>
+    <a class="btn btn-primary mb-3" type="=submit" asp-area="" asp-controller="Parcels" asp-action="Import">Завантажити з Excel</a>
+    <a class="btn btn-primary mb-3" type="=submit" asp-area="" asp-controller="Parcels" asp-action="Export">Експортувати у Excel</a>
+</p>
 <table class="table">
     <thead>
         <tr>
+            <th>
+                Номер накладної
+            </th>
             <th>
                 @Html.DisplayNameFor(model => model.Info)
             </th>
@@ -45,6 +51,9 @@
     <tbody>
 @foreach (var item in Model) {
         <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Id)
+            </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Info)
             </td>
